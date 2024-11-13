@@ -5,7 +5,7 @@ from uuid import uuid4
 
 load_dotenv()
 
-MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
+MONGO_URI = os.getenv("MONGO_URI", "mongodb+srv://inflate:inflate%40123@user.y39b2.mongodb.net/")
 SECRET_KEY = os.getenv("SECRET_KEY","default_secret_key")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 15
