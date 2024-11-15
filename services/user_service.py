@@ -17,7 +17,7 @@ from utils.security import (
     generate_password_reset_token,
     verify_password_reset_token,
 )
-from utils.email import send_otp_email, send_password_reset_email
+from utils.email import send_otp_email, send_password_reset_email,send_verification_success_email,send_password_reset_success_email
 from models.user import UserCreate, UserResponse
 from datetime import timedelta
 from config import RESET_TOKEN_EXPIRE_MINUTES
@@ -41,6 +41,7 @@ def verify_signup_otp(email: str, otp: str):
         raise ValueError("User does not exist.")
     if not verify_and_clear_signup_otp(user["_id"], otp):
         raise ValueError("Invalid OTP")
+    send_verification_success_email(email)
 
 def resend_signup_otp(email: str):
     user = get_user_by_email(email)
@@ -91,5 +92,8 @@ def complete_password_reset(token: str, new_password: str):
     user_id = payload["sub"]
     hashed_password = hash_password(new_password)
     reset_password(user_id, hashed_password)
+
+    user = get_user_by_email(email)
+    send_password_reset_success_email(user["email"])
     
     return {"message": "Password reset successful"}
