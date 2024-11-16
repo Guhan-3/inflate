@@ -8,7 +8,7 @@ app = FastAPI(debug=True)
 app.include_router(users.router, prefix="/api/v1/users")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8080", "https://myflutterweb.com"],  
+    allow_origins=["https://inflate-hdmw.onrender.com/docs"],  
     allow_credentials=True,
     allow_methods=["*"], 
     allow_headers=["*"], 
