@@ -8,7 +8,7 @@ app = FastAPI(debug=True)
 app.include_router(users.router, prefix="/api/v1/users")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Or specify Flutter's domain
+    allow_origins=["*"], 
     allow_methods=["*"],
     allow_headers=["*"],
 )
