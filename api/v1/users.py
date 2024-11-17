@@ -33,7 +33,7 @@ async def login_user_endpoint(user_request: LoginSchema):
     if not auth_result:
         raise HTTPException(status_code=401, detail="Invalid email or password")
     
-    return JSONResponse(content={"data": auth_result}, status_code=200)
+    return JSONResponse(content={auth_result}, status_code=200)
 
 @router.post("/forgot-password")
 async def forgot_password(email: str = Body(..., embed=True)):
