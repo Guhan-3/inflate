@@ -14,5 +14,5 @@ RESET_TOKEN_EXPIRE_MINUTES = 15
 
 SMTP_SERVER = "smtp.gmail.com" 
 SMTP_PORT = 587  
-SMTP_USER = "guhanmurugan1906@gmail.com"
-SMTP_PASSWORD = "wqei awwe ofmn fuza"
+SMTP_USER = "smguhan1926@gmail.com"
+SMTP_PASSWORD = "wjxf rxjg tahc ojnq"
