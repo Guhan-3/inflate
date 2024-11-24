@@ -25,14 +25,25 @@ def store_tokens(user_id: str, access_token: str, refresh_token: str):
         }}
     )
 
-def update_password_reset_token(user_id: str, reset_token: str):
+def update_password_reset_otp(user_id: str, otp: str):
     users_collection.update_one(
         {"_id": ObjectId(user_id)},
         {"$set": {
-            "password_reset_token": reset_token,
-            "password_reset_token_created_at": datetime.utcnow()
+            "password_reset_otp": otp,
+            "password_reset_otp_created_at": datetime.utcnow()
         }}
     )
+
+def verify_and_clear_password_reset_otp(user_id: str, otp: str) -> bool:
+    user = users_collection.find_one({"_id": ObjectId(user_id)})
+    if user and user.get("password_reset_otp") == otp:
+        users_collection.update_one(
+            {"_id": ObjectId(user_id)},
+            {"$unset": {"password_reset_otp": "", "password_reset_otp_created_at": ""}}
+        )
+        return True
+    return False
+
 
 def reset_password(user_id: str, new_hashed_password: str):
     users_collection.update_one(

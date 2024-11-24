@@ -3,10 +3,9 @@ import smtplib
 from email.mime.text import MIMEText
 from config import SMTP_SERVER, SMTP_PORT, SMTP_USER, SMTP_PASSWORD
 
-def send_password_reset_email(email: str, reset_token: str):
-    msg = MIMEText(f"Please use this link to reset your password: "
-                   f"http://yourdomain.com/reset-password?token={reset_token}")
-    msg['Subject'] = 'Password Reset Request'
+def send_password_reset_email(email: str, otp: str):
+    msg = MIMEText(f"Your password reset code is: {otp}")
+    msg['Subject'] = 'Password Reset OTP'
     msg['From'] = SMTP_USER
     msg['To'] = email
 

@@ -38,16 +38,16 @@ async def login_user_endpoint(user_request: LoginSchema):
 @router.post("/forgot-password")
 async def forgot_password(email: str = Body(..., embed=True)):
     try:
-        reset_token = initiate_password_reset(email)
-        return JSONResponse(content={"message": "Password reset email sent", "reset_token": reset_token}, status_code=200)
+        result = initiate_password_reset(email)
+        return JSONResponse(content=result, status_code=200)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 
 @router.post("/reset-password")
-async def reset_password(new_password: str = Body(..., embed=True), reset_token: str = Body(..., embed=True)):
+async def reset_password(email: str = Body(..., embed=True), new_password: str = Body(..., embed=True), otp: str = Body(..., embed=True), ):
     try:
-        complete_password_reset(reset_token, new_password)
-        return JSONResponse(content={"message": "Password reset successful"}, status_code=200)
+        result = complete_password_reset(email, otp, new_password)
+        return JSONResponse(content=result, status_code=200)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 

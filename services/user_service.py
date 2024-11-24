@@ -3,9 +3,10 @@ from db.repositories.user_repository import (
     create_user,
     get_user_by_email,
     store_tokens,
-    update_password_reset_token,
+    update_password_reset_otp,
     reset_password,
     update_signup_otp,
+    verify_and_clear_password_reset_otp,
     verify_and_clear_signup_otp,
 )
 from utils.security import (
@@ -78,22 +79,23 @@ def initiate_password_reset(email: str):
     if not user:
         raise ValueError("Email not registered.")
     
-    reset_token = generate_password_reset_token({"sub": user["_id"]}, timedelta(minutes=RESET_TOKEN_EXPIRE_MINUTES))
-    update_password_reset_token(user["_id"], reset_token)
+    otp = generate_otp()
+    update_password_reset_otp(user["_id"], otp)
     
-    send_password_reset_email(email, reset_token)
-    return {"message": "Password reset email sent"}
+    send_password_reset_email(email, otp)  
+    return {"message": "Password reset OTP sent"}
 
-def complete_password_reset(token: str, new_password: str):
-    payload = verify_password_reset_token(token)
-    if not payload:
-        raise ValueError("Invalid or expired token.")
+def complete_password_reset(email: str ,otp: str, new_password: str):
+    user = get_user_by_email(email)  
+    if not user:
+        raise ValueError("User does not exist.")
     
-    user_id = payload["sub"]
+    if not verify_and_clear_password_reset_otp(user["_id"], otp):
+        raise ValueError("Invalid or expired OTP.")
+    
+    
     hashed_password = hash_password(new_password)
-    reset_password(user_id, hashed_password)
+    reset_password(user["_id"], hashed_password)
 
-    user = get_user_by_email(email)
     send_password_reset_success_email(user["email"])
-    
     return {"message": "Password reset successful"}
