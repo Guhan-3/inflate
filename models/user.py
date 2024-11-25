@@ -16,3 +16,7 @@ class UserResponse(BaseModel):
 class LoginSchema(BaseModel):
     email: str
     password: str
+
+class OTPRequest(BaseModel):
+    email: EmailStr
+    otp: str

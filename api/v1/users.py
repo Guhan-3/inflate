@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Body
 from fastapi.responses import JSONResponse
-from models.user import UserCreate, UserResponse, LoginSchema
+from models.user import UserCreate, UserResponse, LoginSchema, OTPRequest
 from services.user_service import (
     register_user,
     login_user,
@@ -45,12 +45,14 @@ async def forgot_password(email: str = Body(..., embed=True)):
         raise HTTPException(status_code=404, detail=str(e))
 
 @router.post("/verify-password-reset-otp")
-async def verify_password_reset_otp_endpoint(email: str = Body(..., embed=True), otp: str = Body(..., embed=True)):
+async def verify_password_reset_otp_endpoint(request: OTPRequest):
     try:
-        verify_password_reset_otp(email, otp)
+        user = validate_user_email(request.email)
+        validate_otp(user["_id"], request.otp, otp_type="reset")
         return JSONResponse(content={"message": "OTP verified successfully"}, status_code=200)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
 
 @router.post("/resend-password-reset-otp")
 async def resend_password_reset_otp_endpoint(email: str = Body(..., embed=True)):
@@ -60,13 +62,22 @@ async def resend_password_reset_otp_endpoint(email: str = Body(..., embed=True))
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+
 @router.post("/reset-password")
-async def reset_password(email: str = Body(..., embed=True), new_password: str = Body(..., embed=True)):
+async def reset_password_endpoint(new_password: str = Body(..., embed=True)):
     try:
-        result = complete_password_reset(email, new_password)
+        if not new_password:
+            raise HTTPException(status_code=400, detail="New password is required.")
+
+        user_id = get_verified_user_id()
+        if not user_id:
+            raise HTTPException(status_code=403, detail="User identity could not be verified.")
+
+        complete_password_reset(user_id, new_password)
         return JSONResponse(content={"message": "Password reset successfully"}, status_code=200)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
 
 @router.post("/verify-signup-otp")
 async def verify_signup_otp_endpoint(email: str = Body(..., embed=True), otp: str = Body(..., embed=True)):
