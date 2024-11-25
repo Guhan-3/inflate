@@ -1,15 +1,16 @@
-# User-related endpoints
 from fastapi import APIRouter, HTTPException, Body
+from fastapi.responses import JSONResponse
 from models.user import UserCreate, UserResponse, LoginSchema
 from services.user_service import (
     register_user,
     login_user,
     initiate_password_reset,
     complete_password_reset,
+    verify_password_reset_otp,
+    resend_password_reset_otp,
     verify_signup_otp,
     resend_signup_otp,
 )
-from fastapi.responses import JSONResponse
 
 router = APIRouter()
 
@@ -43,11 +44,27 @@ async def forgot_password(email: str = Body(..., embed=True)):
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 
-@router.post("/reset-password")
-async def reset_password(email: str = Body(..., embed=True), new_password: str = Body(..., embed=True), otp: str = Body(..., embed=True), ):
+@router.post("/verify-password-reset-otp")
+async def verify_password_reset_otp_endpoint(email: str = Body(..., embed=True), otp: str = Body(..., embed=True)):
     try:
-        result = complete_password_reset(email, otp, new_password)
-        return JSONResponse(content=result, status_code=200)
+        verify_password_reset_otp(email, otp)
+        return JSONResponse(content={"message": "OTP verified successfully"}, status_code=200)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/resend-password-reset-otp")
+async def resend_password_reset_otp_endpoint(email: str = Body(..., embed=True)):
+    try:
+        resend_password_reset_otp(email)
+        return JSONResponse(content={"message": "OTP resent successfully"}, status_code=200)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/reset-password")
+async def reset_password(email: str = Body(..., embed=True), new_password: str = Body(..., embed=True)):
+    try:
+        result = complete_password_reset(email, new_password)
+        return JSONResponse(content={"message": "Password reset successfully"}, status_code=200)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
