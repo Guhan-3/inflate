@@ -20,3 +20,7 @@ class LoginSchema(BaseModel):
 class OTPRequest(BaseModel):
     email: EmailStr
     otp: str
+
+class PasswordResetRequest(BaseModel):
+    token: str
+    new_password: str

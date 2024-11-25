@@ -104,9 +104,7 @@ def verify_password_reset_otp(email: str, otp: str) -> str:
     if not verify_and_clear_password_reset_otp(user["_id"], otp):
         raise ValueError("Invalid or expired OTP.")
 
-    return user["_id"]
-
-
+    return create_access_token({"sub": user["_id"]})
 def resend_password_reset_otp(email: str):
     user = get_user_by_email(email)
     if not user:

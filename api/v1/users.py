@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Body
 from fastapi.responses import JSONResponse
-from models.user import UserCreate, UserResponse, LoginSchema, OTPRequest
+from models.user import UserCreate, UserResponse, LoginSchema, OTPRequest, PasswordResetRequest
+from utils.security import decode_jwt
 from services.user_service import (
     register_user,
     login_user,
@@ -47,12 +48,10 @@ async def forgot_password(email: str = Body(..., embed=True)):
 @router.post("/verify-password-reset-otp")
 async def verify_password_reset_otp_endpoint(request: OTPRequest):
     try:
-        user = validate_user_email(request.email)
-        validate_otp(user["_id"], request.otp, otp_type="reset")
-        return JSONResponse(content={"message": "OTP verified successfully"}, status_code=200)
+        token = verify_password_reset_otp(request.email, request.otp)
+        return {"message": "OTP verified successfully", "token": token}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-
 
 @router.post("/resend-password-reset-otp")
 async def resend_password_reset_otp_endpoint(email: str = Body(..., embed=True)):
@@ -64,17 +63,15 @@ async def resend_password_reset_otp_endpoint(email: str = Body(..., embed=True))
 
 
 @router.post("/reset-password")
-async def reset_password_endpoint(new_password: str = Body(..., embed=True)):
+async def reset_password_endpoint(request: PasswordResetRequest):
     try:
-        if not new_password:
-            raise HTTPException(status_code=400, detail="New password is required.")
-
-        user_id = get_verified_user_id()
+        payload = decode_jwt(request.token)
+        user_id = payload.get("sub")
         if not user_id:
-            raise HTTPException(status_code=403, detail="User identity could not be verified.")
+            raise HTTPException(status_code=403, detail="Invalid token.")
 
-        complete_password_reset(user_id, new_password)
-        return JSONResponse(content={"message": "Password reset successfully"}, status_code=200)
+        complete_password_reset(user_id, request.new_password)
+        return {"message": "Password reset successfully"}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
